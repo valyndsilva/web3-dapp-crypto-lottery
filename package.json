@@ -6,9 +6,15 @@
     "start": "next start"
   },
   "dependencies": {
+    "@heroicons/react": "^2.0.13",
+    "@openzeppelin/contracts": "^4.8.0",
+    "@thirdweb-dev/react": "^3.6.2",
+    "@thirdweb-dev/sdk": "^3.6.2",
+    "ethers": "^5.7.2",
     "next": "latest",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-spinners": "^0.13.6"
   },
   "devDependencies": {
     "@types/node": "18.11.3",
