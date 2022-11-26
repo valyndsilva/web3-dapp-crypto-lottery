@@ -22255,26 +22255,58 @@ function Login() {
 export default Login;
 ```
 
+### Create components/Loading.tsx:
+
+```
+import Image from "next/image";
+import React from "react";
+import PropagateLoader from "react-spinners/PropagateLoader";
+
+function Loading() {
+  return (
+    <div className="bg-[#091B18] h-screen flex flex-col items-center justify-center">
+      <div className="flex items-center space-x -2 mb-10 ">
+        <Image
+          src="/profile.png"
+          alt="banner image"
+          width={80}
+          height={80}
+          className="rounded-full mr-2"
+        />
+        <h1 className="text-lg text-white font-bold">Loading the LUCKY DRAW</h1>
+      </div>
+      <PropagateLoader color="white" size={30} />
+    </div>
+  );
+}
+
+export default Loading;
+
+```
+
 ### In components/index.tsx:
 
 ```
 export {default as Header} from "./Header"
 export {default as NavButton} from "./NavButton"
 export {default as Login} from "./Login"
+export {default as Loading} from "./Loading"
 ```
 
-
-
 ### Create an env.local file:
+
 To execute all the functions related to the Contract you need to pull in the contract from Thirdweb. Copy the contract address from thirdweb.
 
 In .env.local:
+
 ```
 NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS=...
 ```
+
 Restart server.
 
 If you do any changes to your smart contract you need to run:
+
 ```
 npx thirdweb release
 ```
@@ -22282,6 +22314,7 @@ npx thirdweb release
 The smart contract address changes. So you need to use the latest address in your app.
 
 ### Install [react-spinners](https://www.npmjs.com/package/react-spinners):
+
 ```
 npm install --save react-spinners
 ```
@@ -22292,15 +22325,17 @@ npm install --save react-spinners
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { Header, Login } from "../components";
-import {
-  useAddress,
-} from "@thirdweb-dev/react";
+import { Header, Loading, Login } from "../components";
+import { useAddress, useContract } from "@thirdweb-dev/react";
 
 const Home: NextPage = () => {
   const address = useAddress();
   console.log(address);
+  const { isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
 
+  if (isLoading) return <Loading />;
   if (!address) return <Login />;
 
   return (
@@ -22314,4 +22349,1276 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
 ```
+
+### Building the Next Draw UI:
+
+#### Create components/NextDraw.tsx:
+
+```
+import React from "react";
+
+function NextDraw() {
+  return <div>NextDraw</div>;
+}
+
+export default NextDraw;
+
+```
+
+#### Create components/TicketPrice.tsx:
+
+```
+import React from "react";
+
+function TicketPrice() {
+  return <div>TicketPrice</div>;
+}
+
+export default TicketPrice;
+
+```
+
+#### Create components/CountdownTimer.tsx:
+
+```
+import React from "react";
+
+function CountdownTimer() {
+  return <div>CountdownTimer</div>;
+}
+
+export default CountdownTimer;
+
+```
+
+#### Update components/index.tsx:
+
+```
+export {default as Header} from "./Header"
+export {default as NavButton} from "./NavButton"
+export {default as Login} from "./Login"
+export {default as Loading} from "./Loading"
+export {default as NextDraw} from "./NextDraw"
+export {default as CountdownTimer} from "./CountdownTimer"
+export {default as TicketPrice} from "./TicketPrice"
+```
+
+#### Update pages/index.tsx:
+
+```
+import type { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import { Header, Loading, Login, NextDraw } from "../components";
+import { useAddress, useContract } from "@thirdweb-dev/react";
+
+const Home: NextPage = () => {
+  const address = useAddress();
+  console.log(address);
+  const { isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+
+  if (isLoading) return <Loading />;
+  if (!address) return <Login />;
+
+  return (
+    <div className="bg-[#091B18] min-h-screen flex flex-col">
+      <Head>
+        <title>Crypto Lottery</title>
+      </Head>
+      <div className="flex-1">
+        <Header />
+        <NextDraw />
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+
+
+```
+
+#### Update styles/global.css:
+
+```
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .stats {
+    @apply bg-[#091F1C] text-white p-4 flex-1 rounded-md border-2 border-[#004337];
+  }
+
+  .stats-container {
+    @apply bg-[#091F1C] p-5 rounded-lg border-[#004337] border;
+  }
+
+  .fees {
+    @apply flex items-center justify-between text-emerald-300 text-xs italic;
+  }
+}
+
+```
+
+#### Update components/NextDraw.tsx:
+
+```
+import React, { useState } from "react";
+import CountdownTimer from "./CountdownTimer";
+
+function NextDraw() {
+  const [quantity, setQuantity] = useState<number>(1);
+  return (
+    <div className="space-y-5 md:space-y-0 m-5 md:flex md:flex-row items-start justify-center md:space-x-5">
+      <div className="stats-container">
+        <h1 className="text-5xl text-white font-semibold text-center">
+          The Next Draw
+        </h1>
+        <div className="flex justify-between p-2 space-x-2">
+          <div className="stats">
+            <h2 className="text-sm">Total Pool</h2>
+            <p className="text-xl">0.1 MATIC</p>
+          </div>
+          <div className="stats">
+            <h2 className="text-sm">Tickets Remaing</h2>
+            <p className="text-xl">100</p>
+          </div>
+        </div>
+        <CountdownTimer />
+      </div>
+     <TicketPrice />
+    </div>
+  );
+}
+
+export default NextDraw;
+```
+
+### Pulling Lottery Statistics from Thirdweb:
+
+#### Go to thirdweb under Code tab
+
+In Reading Data section check: Remaining Tickets, CurrentWinningReward, ticketPrice, ticketCommission, expiration and copy the code
+When you read the currency value in third web it normally returns with a wei or gwei which isa smallest unit that represents a matic, etherium etc. We us formatEther() to convert to etherium or matic value using the ethers libarary.
+
+#### Create a constants.ts file in the root:
+
+```
+export const currency: string = "MATIC";
+```
+
+#### Update components/NextDraw.tsx:
+
+```
+import React, { useState } from "react";
+import CountdownTimer from "./CountdownTimer";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+import TicketPrice from "./TicketPrice";
+
+function NextDraw() {
+  const [countdownEnded, setCountdownEnded] = useState<boolean>(false);
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: remainingTickets } = useContractRead(
+    contract,
+    "RemainingTickets"
+  );
+  const { data: currentWinningReward } = useContractRead(
+    contract,
+    "CurrentWinningReward"
+  );
+  const { data: duration } = useContractRead(contract, "duration");
+  console.log(duration);
+  return (
+    <div className="space-y-5 md:space-y-0 m-5 md:flex md:flex-row items-start justify-center md:space-x-5">
+      <div className="stats-container">
+        <h1 className="text-5xl text-white font-semibold text-center">
+          The Next Draw
+        </h1>
+        <div className="flex justify-between p-2 space-x-2">
+          <div className="stats">
+            <h2 className="text-sm">Total Pool</h2>
+            <p className="text-xl">
+              {currentWinningReward &&
+                ethers.utils.formatEther(currentWinningReward.toString())}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="stats">
+            <h2 className="text-sm">Tickets Remaing</h2>
+            <p className="text-xl">{remainingTickets?.toNumber()}</p>
+          </div>
+        </div>
+        {duration !== undefined && (
+          <CountdownTimer setCountdownEnded={setCountdownEnded} />
+        )}
+      </div>
+      <TicketPrice countdownEnded={countdownEnded} />
+    </div>
+  );
+}
+
+export default NextDraw;
+
+
+```
+
+#### Update components/TicketPrice.tsx:
+
+```
+import React, { useState } from "react";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+
+interface Props {
+  countdownEnded: boolean;
+}
+
+function TicketPrice({ countdownEnded }: Props) {
+
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: ticketPrice } = useContractRead(contract, "ticketPrice");
+  const { data: ticketCommission } = useContractRead(
+    contract,
+    "ticketCommission"
+  );
+  const { data: remainingTickets } = useContractRead(
+    contract,
+    "RemainingTickets"
+  );
+  const [quantity, setQuantity] = useState<number>(1);
+
+  return (
+    <div className="stats-container space-y-2">
+      <div className="stats-container">
+        <div className="flex justify-between items-center text-white pb-2">
+          <h2>Price per ticket</h2>
+          <p>
+            {ticketPrice && ethers.utils.formatEther(ticketPrice.toString())}{" "}
+            {currency}
+          </p>
+        </div>
+        <div className="flex text-white items-center space-x-2 bg-[#091B18]  border-[#004337] border p-4">
+          <p>TICKETS</p>
+          <input
+            type="number"
+            className="flex w-full bg-transparent text-right outline-none"
+            min={1}
+            max={10}
+            value={quantity}
+            //   onChange={(e) => setQuantity(parseInt(e.target.value))}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="space-y-2 mt-5">
+          <div className="fees font-extrabold text-sm">
+            <p>Total cost of tickets</p>
+            <p>
+              {ticketPrice &&
+                Number(ethers.utils.formatEther(ticketPrice?.toString())) *
+                  quantity}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>Service fees</p>
+            <p>
+              {" "}
+              {ticketCommission &&
+                ethers.utils.formatEther(ticketCommission.toString())}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>+ Network Fees</p>
+            <p>TBC</p>
+          </div>
+        </div>
+        <button
+          disabled={countdownEnded || remainingTickets?.toNumber === 0}
+          className="mt-5 w-full bg-gradient-to-br from-orange-500 to-emerald-600 px-10 py-5 rounded-md text-white shadow-xl disabled:from-gray-600 disabled:to-gray-100 disabled:text-gray-100 disabled:cursor-not-allowed"
+        >
+          Buy Tickets
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default TicketPrice;
+
+```
+
+#### Update styles/global.css:
+
+```
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .stats {
+    @apply bg-[#091F1C] text-white p-4 flex-1 rounded-md border-2 border-[#004337];
+  }
+
+  .stats-container {
+    @apply bg-[#091F1C] p-5 rounded-lg border-[#004337] border;
+  }
+
+  .fees {
+    @apply flex items-center justify-between text-emerald-300 text-xs italic;
+  }
+
+  .countdown {
+    @apply p-8 text-5xl text-center text-white rounded-lg lg:min-w-[150px] bg-[#013F34];
+  }
+  .countdown-label {
+    @apply text-center text-white uppercase text-sm p-4;
+  }
+}
+```
+
+#### Update components/CountdownTimer.tsx:
+
+Install dependencies [react-countdown](https://www.npmjs.com/package/react-countdown):
+
+```
+npm install react-countdown --save
+```
+
+In components/CountdownTimer.tsx:
+
+```
+import React, { useRef } from "react";
+import { useContract, useContractRead } from "@thirdweb-dev/react";
+import Countdown from "react-countdown";
+
+interface Props {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  completed: boolean;
+}
+interface CountdownProps {
+  setCountdownEnded: (countdownEnded: boolean) => void;
+}
+function CountdownTimer({ setCountdownEnded }: CountdownProps) {
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: expiration, isLoading: isLoadingExpiration } = useContractRead(
+    contract,
+    "expiration"
+  );
+  const { data: duration } = useContractRead(contract, "duration");
+
+  // Avoid reloading timer
+  const startDate = useRef(Date.now());
+  // const timer = startDate.current + 5000; // 5 seconds
+  // const timer = startDate.current + expiration * 1000;
+  const timer = startDate.current + duration * 1000;
+
+  const renderer = ({ hours, minutes, seconds, completed }: Props) => {
+    if (completed) {
+      setCountdownEnded(completed);
+      // console.log(completed);
+      // Render a completed state
+      return (
+        <div>
+          <h2 className="text-white text-xl text-center mb-2 animate-bounce">
+            Ticket Sales have now CLOSED for this draw
+          </h2>
+          <div className="flex space-x-6">
+            <div className="flex-1">
+              <div className="countdown animate-pulse">{hours}</div>
+              <div className="countdown-label">hours</div>
+            </div>
+            <div className="flex-1">
+              <div className="countdown animate-pulse">{minutes}</div>
+              <div className="countdown-label">minutes</div>
+            </div>
+            <div className="flex-1">
+              <div className="countdown animate-pulse">{seconds}</div>
+              <div className="countdown-label">seconds</div>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      // Render a countdown
+      return (
+        <div>
+          <h3 className="text-white text-sm mb-2 italic">Time Remaining</h3>
+          <div className="flex space-x-6">
+            <div className="flex-1">
+              <div className="countdown">{hours}</div>
+              <div className="countdown-label">hours</div>
+            </div>
+            <div className="flex-1">
+              <div className="countdown">{minutes}</div>
+              <div className="countdown-label">minutes</div>
+            </div>
+            <div className="flex-1">
+              <div className="countdown">{seconds}</div>
+              <div className="countdown-label">seconds</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  return (
+    <div className="mt-5 mb-3">
+      <div>
+        {/* <Countdown date={new Date(expiration * 1000) } renderer={renderer} /> */}
+        <Countdown date={timer} renderer={renderer} />
+      </div>
+    </div>
+  );
+}
+
+export default CountdownTimer;
+
+```
+
+To restart the draw open the smart contract in thirdweb
+DrawWinnerTicket > Execute (This resets all the tickets)
+
+### Implementing Buy Ticket Functionality:
+
+#### Install [React Hot Toast](https://react-hot-toast.com/):
+
+```
+npm install react-hot-toast
+```
+
+#### Update pages/_app_.tsx:
+
+```
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import {Toaster} from "react-hot-toast"
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <ThirdwebProvider desiredChainId={ChainId.Mumbai}>
+      <Component {...pageProps} />
+      <Toaster/>
+    </ThirdwebProvider>
+  );
+}
+
+export default MyApp
+
+```
+
+#### Update components/TicketPrice.tsx:
+
+```
+import React, { useState } from "react";
+import {
+  useContract,
+  useContractRead,
+  useContractWrite,
+} from "@thirdweb-dev/react";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+import toast from "react-hot-toast";
+
+interface Props {
+  countdownEnded: boolean;
+}
+
+function TicketPrice({ countdownEnded }: Props) {
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: ticketPrice } = useContractRead(contract, "ticketPrice");
+  const { data: ticketCommission } = useContractRead(
+    contract,
+    "ticketCommission"
+  );
+
+  const { data: remainingTickets } = useContractRead(
+    contract,
+    "RemainingTickets"
+  );
+  const [quantity, setQuantity] = useState<number>(1);
+
+  const { mutateAsync: BuyTickets } = useContractWrite(contract, "BuyTickets");
+
+  const handleClick = async () => {
+    if (!ticketPrice) return;
+    const notification = toast.loading("Buying your tickets...");
+    try {
+      const data = await BuyTickets([
+        {
+          value: ethers.utils.parseEther(
+            (
+              Number(ethers.utils.formatEther(ticketPrice)) * quantity
+            ).toString()
+          ),
+        },
+      ]);
+      toast.success("Tickets purchased successfully!", { id: notification });
+      console.log("Contract call success!", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", { id: notification });
+      console.log("Contract call failure!", err);
+    }
+  };
+
+  return (
+    <div className="stats-container space-y-2">
+      <div className="stats-container">
+        <div className="flex justify-between items-center text-white pb-2">
+          <h2>Price per ticket</h2>
+          <p>
+            {ticketPrice && ethers.utils.formatEther(ticketPrice.toString())}{" "}
+            {currency}
+          </p>
+        </div>
+        <div className="flex text-white items-center space-x-2 bg-[#091B18]  border-[#004337] border p-4">
+          <p>TICKETS</p>
+          <input
+            type="number"
+            className="flex w-full bg-transparent text-right outline-none"
+            min={1}
+            max={10}
+            value={quantity}
+            //   onChange={(e) => setQuantity(parseInt(e.target.value))}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="space-y-2 mt-5">
+          <div className="fees font-extrabold text-sm">
+            <p>Total cost of tickets</p>
+            <p>
+              {ticketPrice &&
+                Number(ethers.utils.formatEther(ticketPrice?.toString())) *
+                  quantity}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>Service fees</p>
+            <p>
+              {" "}
+              {ticketCommission &&
+                ethers.utils.formatEther(ticketCommission.toString())}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>+ Network Fees</p>
+            <p>TBC</p>
+          </div>
+        </div>
+        <button
+          onClick={handleClick}
+           disabled={countdownEnded || remainingTickets?.toNumber === 0}
+          className="mt-5 w-full bg-gradient-to-br from-orange-500 to-emerald-600 px-10 py-5 rounded-md font-semibold text-white shadow-xl disabled:from-gray-600 disabled:to-gray-100 disabled:text-gray-100 disabled:cursor-not-allowed"
+        >
+          Buy {quantity} tickets for{" "}
+          {ticketPrice &&
+            Number(ethers.utils.formatEther(ticketPrice.toString())) *
+              quantity}{" "}
+          {currency}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default TicketPrice;
+
+```
+
+### Building the Ticket Box UI:
+
+#### Update components/TicketPrice.tsx:
+
+```
+import React, { useEffect, useRef, useState } from "react";
+import {
+  useAddress,
+  useContract,
+  useContractRead,
+  useContractWrite,
+} from "@thirdweb-dev/react";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+import toast from "react-hot-toast";
+
+interface Props {
+  countdownEnded: boolean;
+}
+
+function TicketPrice({ countdownEnded }: Props) {
+  const address = useAddress();
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: ticketPrice } = useContractRead(contract, "ticketPrice");
+  const { data: ticketCommission } = useContractRead(
+    contract,
+    "ticketCommission"
+  );
+  const { data: remainingTickets } = useContractRead(
+    contract,
+    "RemainingTickets"
+  );
+  const { data: tickets } = useContractRead(contract, "getTickets");
+
+  const [userTickets, setUserTickets] = useState(0);
+  const [quantity, setQuantity] = useState<number>(1);
+
+  const { mutateAsync: BuyTickets } = useContractWrite(contract, "BuyTickets");
+
+  useEffect(() => {
+    if (!tickets) return;
+    const totalTickets: string[] = tickets;
+    const noOfUserTickets = totalTickets.reduce(
+      (total, ticketAddress) => (ticketAddress === address ? total + 1 : total),
+      0
+    );
+    setUserTickets(noOfUserTickets);
+  }, [tickets, address]);
+  // console.log(userTickets);
+
+  const handleClick = async () => {
+    if (!ticketPrice) return;
+    const notification = toast.loading("Buying your tickets...");
+    try {
+      const data = await BuyTickets([
+        {
+          value: ethers.utils.parseEther(
+            (
+              Number(ethers.utils.formatEther(ticketPrice)) * quantity
+            ).toString()
+          ),
+        },
+      ]);
+      toast.success("Tickets purchased successfully!", { id: notification });
+      console.log("Contract call success!", data);
+      setQuantity(0);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", { id: notification });
+      console.log("Contract call failure!", err);
+    }
+  };
+
+  return (
+    <div className="stats-container space-y-2">
+      <div className="stats-container">
+        <div className="flex justify-between items-center text-white pb-2">
+          <h2>Price per ticket</h2>
+          <p>
+            {ticketPrice && ethers.utils.formatEther(ticketPrice.toString())}{" "}
+            {currency}
+          </p>
+        </div>
+        <div className="flex text-white items-center space-x-2 bg-[#091B18]  border-[#004337] border p-4">
+          <p>TICKETS</p>
+          <input
+            type="number"
+            className="flex w-full bg-transparent text-right outline-none"
+            min={1}
+            max={10}
+            value={quantity}
+            //   onChange={(e) => setQuantity(parseInt(e.target.value))}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+          />
+        </div>
+
+        <div className="space-y-2 mt-5">
+          <div className="fees font-extrabold text-sm">
+            <p>Total cost of tickets</p>
+            <p>
+              {ticketPrice &&
+                Number(ethers.utils.formatEther(ticketPrice?.toString())) *
+                  quantity}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>Service fees</p>
+            <p>
+              {" "}
+              {ticketCommission &&
+                ethers.utils.formatEther(ticketCommission.toString())}{" "}
+              {currency}
+            </p>
+          </div>
+          <div className="fees">
+            <p>+ Network Fees</p>
+            <p>TBC</p>
+          </div>
+        </div>
+        <button
+          onClick={handleClick}
+          disabled={countdownEnded || remainingTickets?.toNumber === 0}
+          className="mt-5 w-full bg-gradient-to-br from-orange-500 to-emerald-600 px-10 py-5 rounded-md font-semibold text-white shadow-xl disabled:from-gray-600 disabled:to-gray-100 disabled:text-gray-100 disabled:cursor-not-allowed"
+        >
+          Buy {quantity} tickets for{" "}
+          {ticketPrice &&
+            Number(ethers.utils.formatEther(ticketPrice.toString())) *
+              quantity}{" "}
+          {currency}
+        </button>
+      </div>
+      {userTickets > 0 && (
+        <div className="stats">
+          <p className="text-lg mb-2">
+            You have {userTickets} Tickets in this draw
+          </p>
+          <div className="flex max-w-sm flex-wrap gap-x-2 gap-y-2">
+            {Array(userTickets)
+              .fill("")
+              .map((_, index) => (
+                <p
+                  key={index}
+                  className="text-emerald-300 h-20 w-12 bg-emerald-500/30 rounded-lg flex flex-shrink-0 items-center justify-center text-xs italic"
+                >
+                  {index + 1}
+                </p>
+              ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default TicketPrice;
+
+
+```
+
+### Build the Footer:
+
+#### Create components/Footer.tsx:
+
+```
+import Image from "next/image";
+import React from "react";
+
+function Footer() {
+  return (
+    <footer className="border-t border-emerald-500/20 flex items-center text-white justify-between p-5">
+      <Image
+        width={40}
+        height={40}
+        className="filter hue-rotate-90 opacity-20 rounded-full"
+        src="/profile.png"
+        alt="Profile Picture"
+      />
+      <p className="text-xs text-emerald-900 pl-5">
+        DISCLAIMER: If you are gambling online utilizing this app, you are doing
+        so completely and totally at your own risk. We are not liable for any
+        losses that are incurred or problems that arise at online casinos or
+        elsewhere.
+      </p>
+    </footer>
+  );
+}
+
+export default Footer;
+
+```
+
+#### Update pages/index.tsx:
+
+```
+import type { NextPage } from "next";
+import Head from "next/head";
+import Image from "next/image";
+import { Footer, Header, Loading, Login, NextDraw } from "../components";
+import { useAddress, useContract } from "@thirdweb-dev/react";
+
+const Home: NextPage = () => {
+  const address = useAddress();
+  console.log(address);
+  const { isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+
+  if (isLoading) return <Loading />;
+  if (!address) return <Login />;
+
+  return (
+    <div className="bg-[#091B18] min-h-screen flex flex-col">
+      <Head>
+        <title>Crypto Lottery</title>
+      </Head>
+      <div className="flex-1">
+        <Header />
+        <NextDraw />
+        <Footer/>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+```
+
+### Implement Winner UI:
+
+#### Create components/Winnings.tsx:
+
+```
+import React from "react";
+import { useContract, useContractWrite } from "@thirdweb-dev/react";
+import { currency } from "../constants";
+import { ethers } from "ethers";
+import toast from "react-hot-toast";
+
+interface Props {
+  winnings: string;
+}
+function Winnings({ winnings }: Props) {
+  const { contract } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { mutateAsync: WithdrawWinnings } = useContractWrite(
+    contract,
+    "WithdrawWinnings"
+  );
+  const onWithdrawWinnings = async () => {
+    const notification = toast.loading("Withdrawing winnings...");
+    try {
+      const data = await WithdrawWinnings([{}]);
+      toast.success("Winnings withdrawn successfully!", { id: notification });
+      console.log("Contract call successful!", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", { id: notification });
+      console.log("Contract call failure!", err);
+    }
+  };
+
+  return (
+    <div className="max-w-md md:max-w-2xl lg:max-w-4xl mx-auto mt-5">
+      <button
+        onClick={onWithdrawWinnings}
+        className="p-5 bg-gradient-to-b from-orange-500 to-emerald-600 animate-pulse text-center rounded-xl w-full"
+      >
+        <p className="font-bold">Winner Winner Chicken Dinner!</p>
+        <p>
+          Total Winnings:{ethers.utils.formatEther(winnings.toString())}{" "}
+          {currency}
+        </p>
+        <br />
+        <p className="font-bold">Click here to withdraw</p>
+      </button>
+    </div>
+  );
+}
+export default Winnings;
+
+```
+
+#### Update pages/index.tsx:
+
+```
+import type { NextPage } from "next";
+import Head from "next/head";
+import {
+  Footer,
+  Header,
+  Loading,
+  Login,
+  NextDraw,
+  Winnings,
+} from "../components";
+import { useAddress, useContract, useContractRead } from "@thirdweb-dev/react";
+
+const Home: NextPage = () => {
+  const address = useAddress();
+  console.log(address);
+  const { contract, isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: winnings } = useContractRead(
+    contract,
+    "getWinningsForAddress",
+    address
+  );
+
+  if (isLoading) return <Loading />;
+  if (!address) return <Login />;
+
+  return (
+    <div className="bg-[#091B18] min-h-screen flex flex-col">
+      <Head>
+        <title>Crypto Lottery</title>
+      </Head>
+      <div className="flex-1">
+        <Header />
+        {winnings > 0 && <Winnings winnings={winnings} />}
+        <NextDraw />
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+```
+
+Once you click on the But Ticket button, open Thirdweb and choose DrawWinnerTicket function under Write Data. When you refersh your app you should see the Winnings component flash.
+
+### Implementing [React Fast Marquee](https://www.npmjs.com/package/react-fast-marquee):
+
+```
+npm install react-fast-marquee --save
+```
+
+```
+import type { NextPage } from "next";
+import Head from "next/head";
+import {
+  Footer,
+  Header,
+  Loading,
+  Login,
+  NextDraw,
+  Winnings,
+} from "../components";
+import { useAddress, useContract, useContractRead } from "@thirdweb-dev/react";
+import Marquee from "react-fast-marquee";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+
+const Home: NextPage = () => {
+  const address = useAddress();
+  console.log(address);
+  const { contract, isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: winnings } = useContractRead(
+    contract,
+    "getWinningsForAddress",
+    address
+  );
+
+  const { data: lastWinner } = useContractRead(contract, "lastWinner");
+
+  const { data: lastWinnerAmount } = useContractRead(
+    contract,
+    "lastWinnerAmount"
+  );
+
+  if (isLoading) return <Loading />;
+  if (!address) return <Login />;
+
+  return (
+    <div className="bg-[#091B18] min-h-screen flex flex-col">
+      <Head>
+        <title>Crypto Lottery</title>
+      </Head>
+      <div className="flex-1">
+        <Header />
+        <Marquee className="bg-[#0A1F1C] p-5 mb-5" gradient={false} speed={100}>
+          <div className="flex space-x-2 mx-10">
+            <h4 className="text-white font-bold">
+              Last Winner: {lastWinner?.toString()}
+            </h4>
+            <h4 className="text-white font-bold">
+              Previous winnings:{" "}
+              {lastWinnerAmount &&
+                ethers.utils.formatEther(lastWinnerAmount?.toString())}{" "}
+              {currency}{" "}
+            </h4>
+          </div>
+        </Marquee>
+        {winnings > 0 && <Winnings winnings={winnings} />}
+        <NextDraw />
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+```
+
+### Implementing Admin Controls:
+
+#### Update styles/globals.css:
+
+```
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .stats {
+    @apply bg-[#091F1C] text-white p-4 flex-1 rounded-md border-2 border-[#004337];
+  }
+
+  .stats-container {
+    @apply bg-[#091F1C] p-5 rounded-lg border-[#004337] border;
+  }
+
+  .fees {
+    @apply flex items-center justify-between text-emerald-300 text-xs italic;
+  }
+
+  .countdown {
+    @apply p-8 text-5xl text-center text-white rounded-lg lg:min-w-[150px] bg-[#013F34];
+  }
+  .countdown-label {
+    @apply text-center text-white uppercase text-sm p-4;
+  }
+  .adminBtn {
+    @apply bg-[#091F1C] p-2 flex-1 rounded-md border-[#004337] border-2 hover:bg-emerald-500/50;
+  }
+}
+
+```
+
+#### Create components/AdminControls:
+
+```
+import React from "react";
+import {
+  StarIcon,
+  CurrencyDollarIcon,
+  ArrowPathIcon,
+  ArrowUturnDownIcon,
+} from "@heroicons/react/24/solid";
+import { useContract, useContractWrite } from "@thirdweb-dev/react";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+import toast from "react-hot-toast";
+
+function AdminControls() {
+  const { contract, isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: totalCommission } = useContractWrite(
+    contract,
+    "operatorTotalCommission"
+  );
+
+  const { mutateAsync: DrawWinnerTicket } = useContractWrite(
+    contract,
+    "DrawWinnerTicket"
+  );
+  const { mutateAsync: WithdrawCommission } = useContractWrite(
+    contract,
+    "WithdrawCommission"
+  );
+  const { mutateAsync: restartDraw } = useContractWrite(
+    contract,
+    "restartDraw"
+  );
+  const { mutateAsync: RefundAll } = useContractWrite(contract, "RefundAll");
+
+  const drawWinner = async () => {
+    const notification = toast.loading("Picking a Lucky Winner...");
+    try {
+      const data = await DrawWinnerTicket([{}]);
+      toast.success("A Winner has been selected!", {
+        id: notification,
+      });
+      console.info("Contract call success", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", {
+        id: notification,
+      });
+      console.error("Contract call error", err);
+    }
+  };
+
+  const onWithdrawCommission = async () => {
+    const notification = toast.loading("Withdrawing Commission...");
+    try {
+      const data = await WithdrawCommission([{}]);
+      toast.success("A Winner has been selected!", {
+        id: notification,
+      });
+      console.info("Contract call success", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", {
+        id: notification,
+      });
+      console.error("Contract call error", err);
+    }
+  };
+
+  const onRestartDraw = async () => {
+    const notification = toast.loading("Restarting draw...");
+    try {
+      const data = await restartDraw([{}]);
+      toast.success("Draw restarted successfully!", {
+        id: notification,
+      });
+      console.info("Contract call success", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", {
+        id: notification,
+      });
+      console.error("Contract call error", err);
+    }
+  };
+
+  const onRefundAll = async () => {
+    const notification = toast.loading("Refunding All...");
+    try {
+      const data = await RefundAll([{}]);
+      toast.success("All refunded successfully!", {
+        id: notification,
+      });
+      console.info("Contract call success", data);
+    } catch (err) {
+      toast.error("Whoops, something went wrong!", {
+        id: notification,
+      });
+      console.error("Contract call error", err);
+    }
+  };
+
+  return (
+    <div className="text-white text-center px-5 py-3 rounded-md border-emerald-300/20 border">
+      <h2 className="font-bold">AdminControls</h2>
+      <p className="mb-5">
+        Total Commission to be withdrawn:{" "}
+        {totalCommission &&
+          ethers.utils.formatEther(totalCommission?.toString())}{" "}
+        {currency}
+      </p>
+      <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-2">
+        <button onClick={drawWinner} className="adminBtn">
+          <StarIcon className="h-6 mx-auto mb-2" />
+          Draw Winner
+        </button>
+        <button onClick={onWithdrawCommission} className="adminBtn">
+          <CurrencyDollarIcon className="h-6 mx-auto mb-2" />
+          Withdraw Commission
+        </button>
+        <button onClick={onRestartDraw} className="adminBtn">
+          <ArrowPathIcon className="h-6 mx-auto mb-2" />
+          Restart Draw
+        </button>
+        <button onClick={onRefundAll} className="adminBtn">
+          <ArrowUturnDownIcon className="h-6 mx-auto mb-2" />
+          Refund All
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default AdminControls;
+
+```
+
+#### Update pages/index.tsx:
+
+```
+import type { NextPage } from "next";
+import Head from "next/head";
+import {
+  AdminControls,
+  Footer,
+  Header,
+  Loading,
+  Login,
+  NextDraw,
+  Winnings,
+} from "../components";
+import { useAddress, useContract, useContractRead } from "@thirdweb-dev/react";
+import Marquee from "react-fast-marquee";
+import { ethers } from "ethers";
+import { currency } from "../constants";
+
+const Home: NextPage = () => {
+  const address = useAddress();
+  console.log(address);
+  const { contract, isLoading } = useContract(
+    process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
+  );
+  const { data: winnings } = useContractRead(
+    contract,
+    "getWinningsForAddress",
+    address
+  );
+
+  const { data: lastWinner } = useContractRead(contract, "lastWinner");
+
+  const { data: lastWinnerAmount } = useContractRead(
+    contract,
+    "lastWinnerAmount"
+  );
+  const { data: isLotteryOperator } = useContractRead(
+    contract,
+    "lotteryOperator"
+  );
+
+  if (isLoading) return <Loading />;
+  if (!address) return <Login />;
+
+  return (
+    <div className="bg-[#091B18] min-h-screen flex flex-col">
+      <Head>
+        <title>Crypto Lottery</title>
+      </Head>
+      <div className="flex-1">
+        <Header />
+        <Marquee className="bg-[#0A1F1C] p-5 mb-5" gradient={false} speed={100}>
+          <div className="flex space-x-2 mx-10">
+            <h4 className="text-white font-bold">
+              Last Winner: {lastWinner?.toString()}
+            </h4>
+            <h4 className="text-white font-bold">
+              Previous winnings:{" "}
+              {lastWinnerAmount &&
+                ethers.utils.formatEther(lastWinnerAmount?.toString())}{" "}
+              {currency}{" "}
+            </h4>
+          </div>
+        </Marquee>
+        {isLotteryOperator === address && (
+          <div className="flex justify-center">
+            <AdminControls/>
+          </div>
+        )}
+
+        {winnings > 0 && <Winnings winnings={winnings} />}
+        <NextDraw />
+        <Footer />
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+```
+
+You can only "RefundAll" once the draw ends.
+Restart Draw
+WithDraw Commissions
+Buy Tickets for admin and non-admin
+Draw Winner
+Refund All

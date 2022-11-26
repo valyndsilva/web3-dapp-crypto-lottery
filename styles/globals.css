@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .stats {
+    @apply bg-[#091F1C] text-white p-4 flex-1 rounded-md border-2 border-[#004337];
+  }
+
+  .stats-container {
+    @apply bg-[#091F1C] p-5 rounded-lg border-[#004337] border;
+  }
+
+  .fees {
+    @apply flex items-center justify-between text-emerald-300 text-xs italic;
+  }
+
+  .countdown {
+    @apply p-8 text-5xl text-center text-white rounded-lg lg:min-w-[150px] bg-[#013F34];
+  }
+  .countdown-label {
+    @apply text-center text-white uppercase text-sm p-4;
+  }
+  .adminBtn {
+    @apply bg-[#091F1C] p-2 flex-1 rounded-md border-[#004337] border-2 hover:bg-emerald-500/50;
+  }
+}
