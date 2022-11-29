@@ -15,10 +15,10 @@ function CountdownTimer() {
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
-  const { data: expiration, isLoading: isLoadingExpiration } = useContractRead(
-    contract,
-    "expiration"
-  );
+  // const { data: expiration, isLoading: isLoadingExpiration } = useContractRead(
+  //   contract,
+  //   "expiration"
+  // );
   const { data: duration } = useContractRead(contract, "duration");
 
   // Avoid reloading timer
