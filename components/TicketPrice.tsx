@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect } from "react";
+import GlobalContext from "../context/GlobalContext";
 import {
   useAddress,
   useContract,
@@ -9,12 +10,12 @@ import { ethers } from "ethers";
 import { currency } from "../constants";
 import toast from "react-hot-toast";
 
-interface Props {
-  countdownEnded: boolean;
-}
+function TicketPrice() {
+  const { countdownEnded, quantity, setQuantity, userTickets, setUserTickets } =
+    useContext(GlobalContext);
 
-function TicketPrice({ countdownEnded }: Props) {
   const address = useAddress();
+
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -28,9 +29,6 @@ function TicketPrice({ countdownEnded }: Props) {
     "RemainingTickets"
   );
   const { data: tickets } = useContractRead(contract, "getTickets");
-
-  const [userTickets, setUserTickets] = useState(0);
-  const [quantity, setQuantity] = useState<number>(1);
 
   const { mutateAsync: BuyTickets } = useContractWrite(contract, "BuyTickets");
 

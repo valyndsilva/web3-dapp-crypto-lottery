@@ -19,7 +19,7 @@ function Header() {
           className="rounded-full"
         />
         <div>
-          <h1 className="text-lg text-white fontbold">Valyn D'Silva</h1>
+          <h1 className="text-lg text-white fontbold">Valyn D&apos;Silva</h1>
           <p className="text-xs text-emerald-500 truncate">
             User:{address?.substring(0, 5)}...
             {address?.substring(address.length, address.length - 5)}

@@ -3,13 +3,21 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint --no-cache",
+    "prepare": "husky install",
+    "check-types": "tsc --pretty --noEmit",
+    "check-format": "prettier --check",
+    "check-lint": "eslint . --ext ts --ext tsx --ext js --ext jsx",
+    "format": "prettier --write .",
+    "test-all": "npm run check-format && npm run check-lint && npm run check-types && npm run build"
   },
   "dependencies": {
     "@heroicons/react": "^2.0.13",
     "@openzeppelin/contracts": "^4.8.0",
     "@thirdweb-dev/react": "^3.6.2",
     "@thirdweb-dev/sdk": "^3.6.2",
+    "eslint-config-next": "^13.0.5",
     "ethers": "^5.7.2",
     "next": "latest",
     "react": "18.2.0",
@@ -20,12 +28,20 @@
     "react-spinners": "^0.13.6"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^13.0.5",
     "@types/node": "18.11.3",
     "@types/react": "18.0.21",
     "@types/react-dom": "18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.45.0",
+    "@typescript-eslint/parser": "^5.45.0",
     "autoprefixer": "^10.4.12",
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-react": "^7.31.11",
     "postcss": "^8.4.18",
+    "prettier": "^2.8.0",
     "tailwindcss": "^3.2.1",
-    "typescript": "4.8.4"
+    "typescript": "4.8.4",
+    "husky": "^8.0.0"
   }
 }

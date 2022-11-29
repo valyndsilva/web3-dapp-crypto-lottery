@@ -1,6 +1,7 @@
-import React, { useRef } from "react";
+import React, { useContext, useRef } from "react";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import Countdown from "react-countdown";
+import GlobalContext from "../context/GlobalContext";
 
 interface Props {
   hours: number;
@@ -8,10 +9,9 @@ interface Props {
   seconds: number;
   completed: boolean;
 }
-interface CountdownProps {
-  setCountdownEnded: (countdownEnded: boolean) => void;
-}
-function CountdownTimer({ setCountdownEnded }: CountdownProps) {
+
+function CountdownTimer() {
+  const { setCountdownEnded } = useContext(GlobalContext);
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -31,6 +31,7 @@ function CountdownTimer({ setCountdownEnded }: CountdownProps) {
     if (completed) {
       setCountdownEnded(completed);
       // console.log(completed);
+
       // Render a completed state
       return (
         <div>

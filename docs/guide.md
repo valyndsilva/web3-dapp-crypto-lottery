@@ -22393,6 +22393,74 @@ export default CountdownTimer;
 
 ```
 
+#### Create a context/GlobalContext.tsx:
+
+```
+import React, { createContext, useState, ReactNode } from "react";
+
+interface GlobalProviderProps {
+  children: ReactNode;
+}
+interface Global {
+  countdownEnded: boolean;
+  setCountdownEnded: (countdownEnded: boolean) => void;
+  quantity: number;
+  setQuantity: (quantity: number) => void;
+  userTickets: number;
+  setUserTickets: (userTickets: number) => void;
+}
+// create context
+const GlobalContext = createContext<Global>({} as Global);
+
+// provider components
+export const GlobalProvider = ({ children }: GlobalProviderProps) => {
+  const [countdownEnded, setCountdownEnded] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+  const [userTickets, setUserTickets] = useState(0);
+  return (
+    <GlobalContext.Provider
+      value={{
+        countdownEnded,
+        setCountdownEnded,
+        quantity,
+        setQuantity,
+        userTickets,
+        setUserTickets,
+      }}
+    >
+      {children}
+    </GlobalContext.Provider>
+  );
+};
+
+export default GlobalContext;
+
+```
+
+#### Update pages/\_app.tsx:
+
+```
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+import { ChainId, ThirdwebProvider } from "@thirdweb-dev/react";
+import {Toaster} from "react-hot-toast"
+import { GlobalProvider } from '../context/GlobalContext';
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <ThirdwebProvider desiredChainId={ChainId.Mumbai}>
+     <GlobalProvider>
+      <Component {...pageProps} />
+      <Toaster/>
+      </GlobalProvider>
+    </ThirdwebProvider>
+  );
+}
+
+export default MyApp
+
+```
+
 #### Update components/index.tsx:
 
 ```
@@ -22469,11 +22537,13 @@ export default Home;
 #### Update components/NextDraw.tsx:
 
 ```
-import React, { useState } from "react";
+import React, { useContext} from "react";
 import CountdownTimer from "./CountdownTimer";
+import CountdownContext from "../context/GlobalContext";
 
 function NextDraw() {
-  const [quantity, setQuantity] = useState<number>(1);
+    const { countdownEnded} = useContext(CountdownContext);
+
   return (
     <div className="space-y-5 md:space-y-0 m-5 md:flex md:flex-row items-start justify-center md:space-x-5">
       <div className="stats-container">
@@ -22490,7 +22560,7 @@ function NextDraw() {
             <p className="text-xl">100</p>
           </div>
         </div>
-        <CountdownTimer />
+       {!countdownEnded && <CountdownTimer />}
       </div>
      <TicketPrice />
     </div>
@@ -22516,15 +22586,17 @@ export const currency: string = "MATIC";
 #### Update components/NextDraw.tsx:
 
 ```
-import React, { useState } from "react";
+import React, { useContext} from "react";
 import CountdownTimer from "./CountdownTimer";
+import CountdownContext from "../context/GlobalContext";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { currency } from "../constants";
 import TicketPrice from "./TicketPrice";
 
 function NextDraw() {
-  const [countdownEnded, setCountdownEnded] = useState<boolean>(false);
+  const { countdownEnded} = useContext(CountdownContext);
+
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -22537,7 +22609,7 @@ function NextDraw() {
     "CurrentWinningReward"
   );
   const { data: duration } = useContractRead(contract, "duration");
-  console.log(duration);
+  // console.log(duration);
   return (
     <div className="space-y-5 md:space-y-0 m-5 md:flex md:flex-row items-start justify-center md:space-x-5">
       <div className="stats-container">
@@ -22558,11 +22630,9 @@ function NextDraw() {
             <p className="text-xl">{remainingTickets?.toNumber()}</p>
           </div>
         </div>
-        {duration !== undefined && (
-          <CountdownTimer setCountdownEnded={setCountdownEnded} />
-        )}
+        {!countdownEnded && <CountdownTimer />}
       </div>
-      <TicketPrice countdownEnded={countdownEnded} />
+      <TicketPrice />
     </div>
   );
 }
@@ -22575,16 +22645,15 @@ export default NextDraw;
 #### Update components/TicketPrice.tsx:
 
 ```
-import React, { useState } from "react";
+import React, { useContext, useEffect } from "react";
+import GlobalContext from "../context/GlobalContext";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { currency } from "../constants";
 
-interface Props {
-  countdownEnded: boolean;
-}
-
-function TicketPrice({ countdownEnded }: Props) {
+function TicketPrice() {
+  const { countdownEnded, quantity, setQuantity, userTickets, setUserTickets } =
+    useContext(GlobalContext);
 
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
@@ -22598,7 +22667,6 @@ function TicketPrice({ countdownEnded }: Props) {
     contract,
     "RemainingTickets"
   );
-  const [quantity, setQuantity] = useState<number>(1);
 
   return (
     <div className="stats-container space-y-2">
@@ -22702,9 +22770,10 @@ npm install react-countdown --save
 In components/CountdownTimer.tsx:
 
 ```
-import React, { useRef } from "react";
+import React, { useContext, useRef } from "react";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import Countdown from "react-countdown";
+import GlobalContext from "../context/GlobalContext";
 
 interface Props {
   hours: number;
@@ -22712,10 +22781,9 @@ interface Props {
   seconds: number;
   completed: boolean;
 }
-interface CountdownProps {
-  setCountdownEnded: (countdownEnded: boolean) => void;
-}
-function CountdownTimer({ setCountdownEnded }: CountdownProps) {
+
+function CountdownTimer() {
+  const { setCountdownEnded } = useContext(GlobalContext);
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -22735,6 +22803,7 @@ function CountdownTimer({ setCountdownEnded }: CountdownProps) {
     if (completed) {
       setCountdownEnded(completed);
       // console.log(completed);
+
       // Render a completed state
       return (
         <div>
@@ -22830,7 +22899,8 @@ export default MyApp
 #### Update components/TicketPrice.tsx:
 
 ```
-import React, { useState } from "react";
+import React, { useContext, useEffect} from "react";
+import GlobalContext from "../context/GlobalContext";
 import {
   useContract,
   useContractRead,
@@ -22845,6 +22915,9 @@ interface Props {
 }
 
 function TicketPrice({ countdownEnded }: Props) {
+    const { countdownEnded, quantity, setQuantity } =
+    useContext(GlobalContext);
+
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -22858,7 +22931,6 @@ function TicketPrice({ countdownEnded }: Props) {
     contract,
     "RemainingTickets"
   );
-  const [quantity, setQuantity] = useState<number>(1);
 
   const { mutateAsync: BuyTickets } = useContractWrite(contract, "BuyTickets");
 
@@ -22955,7 +23027,8 @@ export default TicketPrice;
 #### Update components/TicketPrice.tsx:
 
 ```
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect} from "react";
+import GlobalContext from "../context/GlobalContext";
 import {
   useAddress,
   useContract,
@@ -22966,12 +23039,12 @@ import { ethers } from "ethers";
 import { currency } from "../constants";
 import toast from "react-hot-toast";
 
-interface Props {
-  countdownEnded: boolean;
-}
+function TicketPrice() {
+  const { countdownEnded, quantity, setQuantity, userTickets, setUserTickets } =
+    useContext(GlobalContext);
 
-function TicketPrice({ countdownEnded }: Props) {
   const address = useAddress();
+
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -22985,9 +23058,6 @@ function TicketPrice({ countdownEnded }: Props) {
     "RemainingTickets"
   );
   const { data: tickets } = useContractRead(contract, "getTickets");
-
-  const [userTickets, setUserTickets] = useState(0);
-  const [quantity, setQuantity] = useState<number>(1);
 
   const { mutateAsync: BuyTickets } = useContractWrite(contract, "BuyTickets");
 
@@ -23107,7 +23177,6 @@ function TicketPrice({ countdownEnded }: Props) {
 }
 
 export default TicketPrice;
-
 
 ```
 
@@ -23616,9 +23685,10 @@ export default Home;
 
 ```
 
-You can only "RefundAll" once the draw ends.
+## Steps to Test App:
+
 Restart Draw
 WithDraw Commissions
-Buy Tickets for admin and non-admin
+Buy Tickets for admin and non-admin users
 Draw Winner
-Refund All
+Refund All (This works only when the draw has ended.)
