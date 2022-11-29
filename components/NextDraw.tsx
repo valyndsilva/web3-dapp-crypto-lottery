@@ -7,9 +7,6 @@ import TicketPrice from "./TicketPrice";
 import GlobalContext from "../context/GlobalContext";
 
 function NextDraw() {
-  const { countdownEnded, showCountdown, setShowCountdown } =
-    useContext(GlobalContext);
-
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
@@ -22,9 +19,6 @@ function NextDraw() {
     "CurrentWinningReward"
   );
 
-  useEffect(() => {
-    countdownEnded ? setShowCountdown(false) : setShowCountdown(true);
-  }, [countdownEnded]);
   return (
     <div className="space-y-5 md:space-y-0 m-5 md:flex md:flex-row items-start justify-center md:space-x-5">
       <div className="stats-container">
@@ -45,7 +39,7 @@ function NextDraw() {
             <p className="text-xl">{remainingTickets?.toNumber()}</p>
           </div>
         </div>
-        {showCountdown && <CountdownTimer />}
+        <CountdownTimer />
       </div>
       <TicketPrice />
     </div>

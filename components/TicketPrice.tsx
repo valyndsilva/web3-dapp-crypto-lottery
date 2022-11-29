@@ -58,7 +58,7 @@ function TicketPrice() {
       ]);
       toast.success("Tickets purchased successfully!", { id: notification });
       console.log("Contract call success!", data);
-      setQuantity(0);
+      setQuantity(1);
     } catch (err) {
       toast.error("Whoops, something went wrong!", { id: notification });
       console.log("Contract call failure!", err);

@@ -3,7 +3,7 @@ import React from "react";
 
 function Footer() {
   return (
-    <footer className="border-t border-emerald-500/20 flex items-center text-white justify-between p-5">
+    <footer className="border-t border-emerald-500/20 flex items-center text-white justify-center p-5">
       <Image
         width={40}
         height={40}

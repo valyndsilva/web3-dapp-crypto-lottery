@@ -15,17 +15,15 @@ function CountdownTimer() {
   const { contract } = useContract(
     process.env.NEXT_PUBLIC_LOTTERY_CONTRACT_ADDRESS
   );
-  // const { data: expiration, isLoading: isLoadingExpiration } = useContractRead(
-  //   contract,
-  //   "expiration"
-  // );
+  const { data: expiration } = useContractRead(contract, "expiration");
   const { data: duration } = useContractRead(contract, "duration");
 
   // Avoid reloading timer
-  const startDate = useRef(Date.now());
+  // const startDate = useRef(Date.now());
   // const timer = startDate.current + 5000; // 5 seconds
   // const timer = startDate.current + expiration * 1000;
-  const timer = startDate.current + duration * 1000;
+  // const timer = startDate.current + duration * 1000;
+  const timer = new Date(expiration * 1000);
 
   const renderer = ({ hours, minutes, seconds, completed }: Props) => {
     if (completed) {
@@ -81,8 +79,7 @@ function CountdownTimer() {
   return (
     <div className="mt-5 mb-3">
       <div>
-        {/* <Countdown date={new Date(expiration * 1000) } renderer={renderer} /> */}
-        <Countdown date={timer} renderer={renderer} />
+        {duration ? <Countdown date={timer} renderer={renderer} /> : null}
       </div>
     </div>
   );

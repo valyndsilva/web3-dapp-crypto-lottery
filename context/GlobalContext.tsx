@@ -6,8 +6,6 @@ interface GlobalProviderProps {
 interface Global {
   countdownEnded: boolean;
   setCountdownEnded: (countdownEnded: boolean) => void;
-  showCountdown: boolean;
-  setShowCountdown: (countdownEnded: boolean) => void;
   quantity: number;
   setQuantity: (quantity: number) => void;
   userTickets: number;
@@ -19,7 +17,6 @@ const GlobalContext = createContext<Global>({} as Global);
 // provider components
 export const GlobalProvider = ({ children }: GlobalProviderProps) => {
   const [countdownEnded, setCountdownEnded] = useState(false);
-  const [showCountdown, setShowCountdown] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [userTickets, setUserTickets] = useState(0);
   return (
@@ -31,8 +28,6 @@ export const GlobalProvider = ({ children }: GlobalProviderProps) => {
         setQuantity,
         userTickets,
         setUserTickets,
-        showCountdown,
-        setShowCountdown,
       }}
     >
       {children}
