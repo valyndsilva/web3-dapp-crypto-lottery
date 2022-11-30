@@ -44,7 +44,7 @@ Once tickets have been bought the admin can easily draw a winner.
 
 ### Withdraw Winnings
  Once the winner has been drawn the winner can easily withdraw their winnings.
-![/public/gifs/withdraw-winnings.gif](/public/demo/withdraw-winnings.mp4)
+(/public/gifs/withdraw-winnings.gif) [Open](/public/demo/withdraw-winnings.mp4)
 
 ### Refund All
   The admin can refund all transactions if needed only once a draw is complete.
