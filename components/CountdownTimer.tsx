@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from "react";
+import React, { useContext} from "react";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import Countdown from "react-countdown";
 import GlobalContext from "../context/GlobalContext";

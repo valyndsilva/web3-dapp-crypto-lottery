@@ -1,10 +1,9 @@
-import React, { useContext, useEffect } from "react";
+import React from "react";
 import CountdownTimer from "./CountdownTimer";
 import { useContract, useContractRead } from "@thirdweb-dev/react";
 import { ethers } from "ethers";
 import { currency } from "../constants";
 import TicketPrice from "./TicketPrice";
-import GlobalContext from "../context/GlobalContext";
 
 function NextDraw() {
   const { contract } = useContract(
